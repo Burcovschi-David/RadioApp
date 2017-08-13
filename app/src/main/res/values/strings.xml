@@ -9,4 +9,6 @@
     <string name="title_activity_contact">Contacteaza-ne</string>
 
     <string name="title_activity_dedicatii">Dedica o melodie</string>
+    <string name="title_activity_despre_noi">DespreNoi</string>
+    <string name="title_activity_dj">DJActivity</string>
 </resources>

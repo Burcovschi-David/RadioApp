@@ -1,5 +1,7 @@
 package ro.radioliberty.asculta.radioliberty;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -17,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RemoteViews;
 import android.widget.TextView;
 
 import com.google.android.exoplayer2.DefaultLoadControl;
@@ -54,7 +57,7 @@ public class RadioStationAdapter extends RecyclerView.Adapter<RadioStationAdapte
 
     static String curUrl = "";
 
-    private List<RadioStationInfo> radioStationList;
+    public static List<RadioStationInfo> radioStationList;
 
     public RadioStationAdapter(List<RadioStationInfo> radioStationList) {
         this.radioStationList = radioStationList;
@@ -105,9 +108,11 @@ public class RadioStationAdapter extends RecyclerView.Adapter<RadioStationAdapte
 
     static String currentPlayingURLJSON="";
 
+    static RadioStationInfo ci;
     @Override
     public void onBindViewHolder(final RadioStationViewHolder radioStationViewHolder, int i) {
-        RadioStationInfo ci = radioStationList.get(i);
+
+        ci = radioStationList.get(i);
         final String titlu = ci.name;
         final String imageURL = ci.pictograma;
         final String url = ci.url;
@@ -125,6 +130,7 @@ public class RadioStationAdapter extends RecyclerView.Adapter<RadioStationAdapte
 
             @Override
             public void onClick(View view) {
+                MainActivity.curPlayngURL=url;
                 //notice I implemented onClickListener here
                 // so I can associate this click with final Item item
                 if(Functions.isReachableByTcp(Config.server_domain, 80, 400)==true) {
@@ -140,17 +146,27 @@ public class RadioStationAdapter extends RecyclerView.Adapter<RadioStationAdapte
                         }
                     }
 
+                    MainActivity.currentRadioChannelPlaying=titlu;
+
                     Context context = view.getContext();
+
+
 // show The Image in a ImageView
                     // show The Image in a ImageView
 
                     // new RadioStationAdapter.PlayStreamTask(view.getContext()).execute(url);
                     initMediaPlayer(view.getContext(), url);
                     currentPlayingURLJSON=url;
-                    MainActivity.mPlayButton.setBackgroundResource(R.mipmap.ic_stop);
-                    Functions.getCurrentPlaying();
-                    //VErific din 10 in 10 secunde daca sunt solicitari noi
 
+                    MainActivity.notificationView.setImageViewResource(R.id.closeOnFlash, R.mipmap.ic_stop);
+                    MainActivity.mPlayButton.setBackgroundResource(R.mipmap.ic_stop);
+                    Functions.getCurrentPlaying(view.getContext());
+                    //VErific din 10 in 10 secunde daca sunt solicitari noi
+//Display notification
+
+                    NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                    notificationManager.cancel(21061999);
+                    MainActivity.notificationManager.notify(21061999, MainActivity.notification);
 
 
 
@@ -169,7 +185,9 @@ public class RadioStationAdapter extends RecyclerView.Adapter<RadioStationAdapte
                 //notice I implemented onClickListener here
                 // so I can associate this click with final Item item
                 MainActivity.isPlay = true;
-
+                MainActivity.curPlayngURL=url;
+                MainActivity.currentRadioChannelPlaying=titlu;
+                initMediaPlayer(view.getContext(), url);
                 Log.d("Clicked!", titlu);
                 if (MainActivity.exoPlayer != null) {
                     if (MainActivity.exoPlayer.getPlayWhenReady()) {
@@ -186,12 +204,15 @@ public class RadioStationAdapter extends RecyclerView.Adapter<RadioStationAdapte
                 // new RadioStationAdapter.PlayStreamTask(view.getContext()).execute(url);
                 initMediaPlayer(view.getContext(), url);
                 MainActivity.mPlayButton.setBackgroundResource(R.mipmap.ic_stop);
+
+                MainActivity.notificationView.setImageViewResource(R.id.closeOnFlash, R.mipmap.ic_stop);
                 if(Functions.isReachableByTcp(Config.server_domain, 80, 400)==true) {
-                    Functions.getCurrentPlaying();
+                    Functions.getCurrentPlaying(view.getContext());
                 }
 
-
-
+                NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.cancel(21061999);
+                MainActivity.notificationManager.notify(21061999, MainActivity.notification);
 
 
 
@@ -214,15 +235,24 @@ public class RadioStationAdapter extends RecyclerView.Adapter<RadioStationAdapte
             if (MainActivity.isPlay && MainActivity.exoPlayer != null) {
 
                 v.setBackgroundResource(R.mipmap.ic_play);
+                MainActivity.notification.flags |= Notification.FLAG_AUTO_CANCEL;
+                MainActivity.notificationView.setImageViewResource(R.id.closeOnFlash, R.mipmap.ic_play);
                 MainActivity.webview.setVisibility(View.INVISIBLE);
                 MainActivity.exoPlayer.stop();
             } else if (MainActivity.exoPlayer != null) {
                 v.setBackgroundResource(R.mipmap.ic_play);
                 MainActivity.webview.setVisibility(View.VISIBLE);
                 v.setBackgroundResource(R.mipmap.ic_stop);
+
+                MainActivity.notificationView.setImageViewResource(R.id.closeOnFlash, R.mipmap.ic_stop);
                 initMediaPlayer(v.getContext(), curUrl);
 
             }
+
+            NotificationManager notificationManager = (NotificationManager) v.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
+            notificationManager.cancel(21061999);
+            MainActivity.notificationManager.notify(21061999, MainActivity.notification);
+
 
             MainActivity.isPlay = !MainActivity.isPlay; // reverse
 
@@ -241,7 +271,7 @@ public class RadioStationAdapter extends RecyclerView.Adapter<RadioStationAdapte
     }
 
 
-    private static void initMediaPlayer(Context context, String url1) {
+    public static void initMediaPlayer(Context context, String url1) {
         Handler mHandler = new Handler();
 
         String userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.11; rv:40.0) Gecko/20100101 Firefox/40.0";

@@ -2,6 +2,7 @@ package ro.radioliberty.asculta.radioliberty;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
@@ -39,7 +40,7 @@ import java.util.concurrent.ExecutionException;
  * Created by davidburcovschi on 08/05/2017.
  */
 
-public class Functions {
+public class Functions{
 
 
         public static String getBaseURL(String url) throws URISyntaxException {
@@ -487,7 +488,7 @@ public class Functions {
 
 
 
-    static void getCurrentPlaying()  {
+    static void getCurrentPlaying(Context context)  {
 
 //http://asculta.radioliberty.ro:1989/statistics?json=1
 
@@ -555,6 +556,11 @@ public class Functions {
             if(RadioStationAdapter.currentPlayingURLJSON==""){
                 MainActivity.currentplaying.setText("---");
             }else {
+
+                MainActivity.notificationView.setTextViewText(R.id.playCurrentRadio,MainActivity.currentRadioChannelPlaying+"\n"+currentPlayingString);
+                NotificationManager notificationManager = (NotificationManager)  context.getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.cancel(21061999);
+                MainActivity.notificationManager.notify(21061999, MainActivity.notification);
                 MainActivity.currentplaying.setText(currentPlayingString);
 
             }

@@ -1,10 +1,12 @@
 package ro.radioliberty.asculta.radioliberty;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,13 +18,17 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -62,11 +68,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import static ro.radioliberty.asculta.radioliberty.R.id.currentPlaying;
 import static ro.radioliberty.asculta.radioliberty.R.id.toolbar;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-    static MediaPlayer mediaPlayer;
+    static String curPlayngURL;
     static boolean isPlay=false;
     static Button mPlayButton;
     static WebView webview;
@@ -76,7 +83,9 @@ public class MainActivity extends AppCompatActivity
     static ExoPlayer exoPlayer;
     static String baseurljson=null;
     static Handler timerHandler2 = new Handler();
-
+    static String packName;
+    static RemoteViews notificationView ;
+    static String currentRadioChannelPlaying;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,8 +103,9 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-
+        packName=getPackageName();
+        notificationView=new RemoteViews(packName,
+                R.layout.musicnotification);
         initControls();
         currentplaying = (TextView) findViewById(R.id.currentPlaying);
         currentplaying.setSelected(true);
@@ -112,11 +122,14 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-
+        final LayoutInflater factory = getLayoutInflater();
+        startPlayerNotification();
 
         mPlayButton = (Button) findViewById(R.id.controllPlay);
         // Default button, if need set it in xml via background="@drawable/default"
         mPlayButton.setBackgroundResource(R.mipmap.ic_play);
+
+
         mPlayButton.setOnClickListener(RadioStationAdapter.mTogglePlayButton);
 
 
@@ -130,8 +143,10 @@ public class MainActivity extends AppCompatActivity
         recList.setLayoutManager(llm);
 
         if(Functions.isReachableByTcp(Config.server_domain, 80, 4000)){
+
             RadioStationAdapter ca = new RadioStationAdapter(createList());
             recList.setAdapter(ca);
+
         }else{
             AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
             alertDialog.setTitle("Radio Liberty");
@@ -146,7 +161,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         //VErific din 10 in 10 secunde daca sunt solicitari noi
-        final Handler timerHandler;
+        /*final Handler timerHandler;
         timerHandler = new Handler();
 
         Runnable timerRunnable = new Runnable() {
@@ -167,13 +182,13 @@ public class MainActivity extends AppCompatActivity
         };
 
         timerHandler.postDelayed(timerRunnable, 30000); //Start timer after 1 sec
-
+*/
 
         Runnable timerRunnable2 = new Runnable() {
             @Override
             public void run() {
 
-                Functions.getCurrentPlaying();
+                Functions.getCurrentPlaying(getApplicationContext());
                 MainActivity.timerHandler2.postDelayed(this, 10000); //Start timer after 1 sec
 
             }
@@ -181,7 +196,7 @@ public class MainActivity extends AppCompatActivity
 
         //MainActivity.timerHandler.removeCallbacks(timerRunnable);
 
-        MainActivity.timerHandler2.postDelayed(timerRunnable, 10000); //Start timer after 1 sec
+        MainActivity.timerHandler2.postDelayed(timerRunnable2, 10000); //Start timer after 1 sec
 
         /*// show The Image in a ImageView
         new DownloadImageTask((ImageView) findViewById(R.id.banner))
@@ -189,7 +204,6 @@ public class MainActivity extends AppCompatActivity
 
 
     }
-
 
 
 
@@ -414,16 +428,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-
-
-
-
-
-
-
-
-
-
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -431,8 +435,31 @@ public class MainActivity extends AppCompatActivity
             drawer.closeDrawer(GravityCompat.START);
         } else {
             super.onBackPressed();
+            NotificationManager nManager = ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE));
+            nManager.cancelAll();
+            finish();
+            MainActivity.this.finish();
+
+
+
+            nManager.cancelAll();
         }
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        NotificationManager nManager = ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE));
+        nManager.cancelAll();
+        finish();
+        MainActivity.this.finish();
+
+
+
+        nManager.cancelAll();
+    }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -475,5 +502,138 @@ public class MainActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+
+    static NotificationManager notificationManager;
+    static Notification notification;
+    Intent notificationIntent;
+    PendingIntent pendingNotificationIntent;
+
+    public void startPlayerNotification(){
+        String ns = Context.NOTIFICATION_SERVICE;
+        notificationManager =
+                (NotificationManager) getSystemService(ns);
+
+        notification = new Notification(R.mipmap.ic_launcher, null,
+                System.currentTimeMillis());
+
+
+
+        //the intent that is started when the notification is clicked (works)
+        notificationIntent = new Intent(this, MainActivity.class);
+        pendingNotificationIntent = PendingIntent.getActivity(this, 0,
+                notificationIntent, 0);
+
+        notification.contentView = notificationView;
+        notification.contentIntent = pendingNotificationIntent;
+        notification.flags |= Notification.FLAG_NO_CLEAR;
+
+
+
+        //this is the intent that is supposed to be called when the
+        //play/pause button is clicked
+        Intent switchIntent = new Intent(this, playStopNotification.class);
+        PendingIntent pendingSwitchIntent = PendingIntent.getBroadcast(this, 0,
+                switchIntent, 0);
+
+        notificationView.setOnClickPendingIntent(R.id.closeOnFlash,
+                pendingSwitchIntent);
+        if(isPlay) {
+            notificationView.setImageViewResource(R.id.closeOnFlash, R.mipmap.ic_stop);
+        }else{
+            MainActivity.notification.flags |= Notification.FLAG_AUTO_CANCEL;
+            notificationView.setImageViewResource(R.id.closeOnFlash, R.mipmap.ic_play);
+        }
+
+        //this is the intent that is supposed to be called when the
+        //exit button is clicked
+        Intent cancelBtnIntent = new Intent(this, exitAppNotification.class);
+        PendingIntent pendingcancelBtnIntent = PendingIntent.getBroadcast(this, 0,
+                cancelBtnIntent, 0);
+
+        notificationView.setOnClickPendingIntent(R.id.exitApp,
+                pendingSwitchIntent);
+
+
+
+        //Display notification
+        notificationManager.notify(21061999, notification);
+    }
+
+
+    void cancelPlayerNotification(){
+        NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.cancel(21061999);
+    }
+
+    public static class playStopNotification extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+            if (MainActivity.isPlay && MainActivity.exoPlayer != null) {
+
+                MainActivity.mPlayButton.setBackgroundResource(R.mipmap.ic_play);
+                MainActivity.notification.flags |= Notification.FLAG_AUTO_CANCEL;
+                notificationView.setImageViewResource(R.id.closeOnFlash, R.mipmap.ic_play);
+                MainActivity.webview.setVisibility(View.INVISIBLE);
+                MainActivity.exoPlayer.stop();
+                Log.d("PACK NAME",packName);
+                Log.d("CAZURI APASARE BUTON:","CAZ 1");
+
+            }else if(MainActivity.exoPlayer != null){
+                if(Functions.isReachableByTcp(Config.server_domain, 80, 400)==true) {
+                    Log.d("PACK NAME",packName);
+                    Log.d("CAZURI APASARE BUTON:","CAZ 2");
+
+                    if (MainActivity.exoPlayer != null) {
+                        if (MainActivity.exoPlayer.getPlayWhenReady()) {
+
+                            Log.d("MEDIA PLAYER:", "STOPPED!!");
+                            MainActivity.exoPlayer.stop();
+                            MainActivity.exoPlayer.release();
+                        }
+                    }
+
+
+                    Log.d("Current plaing notif: "+curPlayngURL,curPlayngURL);
+                   // new RadioStationAdapter.PlayStreamTask(view.getContext()).execute(url);
+                    RadioStationAdapter.initMediaPlayer(context, curPlayngURL);
+                    RadioStationAdapter.currentPlayingURLJSON=curPlayngURL;
+                    MainActivity.mPlayButton.setBackgroundResource(R.mipmap.ic_stop);
+
+                    notificationView.setImageViewResource(R.id.closeOnFlash, R.mipmap.ic_stop);
+                    Functions.getCurrentPlaying(context);
+                    //VErific din 10 in 10 secunde daca sunt solicitari noi
+
+                }
+            }
+
+
+            if(isPlay &&  MainActivity.notificationManager!=null) {
+                NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.cancel(21061999);
+                MainActivity.notificationManager.notify(21061999, MainActivity.notification);
+            }
+
+
+            MainActivity.isPlay = !MainActivity.isPlay; // reverse
+
+        }
+    }
+
+    public class exitAppNotification extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            NotificationManager nManager = ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
+            nManager.cancelAll();
+            finish();
+            MainActivity.this.finish();
+            //((AppCompatActivity) intent).finish();
+
+
+            nManager.cancelAll();
+        }
+    }
+
 
 }

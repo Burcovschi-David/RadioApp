@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/cardview_light_background"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:weightSum="100">
+
+
+    <ImageView
+        android:id="@+id/notifiation_image"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:layout_weight="34.07"
+
+        android:src="@mipmap/ic_launcher" />
+
+    <TextView
+        android:id="@+id/playCurrentRadio"
+        android:layout_width="160dp"
+        android:layout_height="64dp"
+        android:layout_weight="50"
+        android:gravity="center"
+        android:text="-------Radio Liberty -------"
+        android:textAlignment="viewStart"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <ImageButton
+        android:id="@+id/closeOnFlash"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/colorAccent" />
+
+    <ImageButton
+        android:id="@+id/exitApp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/ic_close_black_24dp" />
+
+
+
+
+
+</LinearLayout>

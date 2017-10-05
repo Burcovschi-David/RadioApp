@@ -10,6 +10,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -48,6 +49,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.google.android.exoplayer2.ExoPlayer;
 
@@ -428,23 +430,6 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
-            NotificationManager nManager = ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE));
-            nManager.cancelAll();
-            finish();
-            MainActivity.this.finish();
-
-
-
-            nManager.cancelAll();
-        }
-    }
 
     @Override
     public void onDestroy() {
@@ -454,6 +439,8 @@ public class MainActivity extends AppCompatActivity
         finish();
         MainActivity.this.finish();
 
+        System.exit(0);
+        android.os.Process.killProcess(android.os.Process.myPid());
 
 
         nManager.cancelAll();
@@ -495,6 +482,12 @@ public class MainActivity extends AppCompatActivity
             startActivity(i);
         }else if(id == R.id.dedicatii){
             Intent i=new Intent(MainActivity.this,Dedicatii.class);
+            startActivity(i);
+        }else if(id==R.id.dj){
+            Intent i=new Intent(MainActivity.this,DJActivity.class);
+            startActivity(i);
+        }else if(id==R.id.despre_noi){
+            Intent i=new Intent(MainActivity.this,DespreNoi.class);
             startActivity(i);
         }
 
@@ -541,7 +534,7 @@ public class MainActivity extends AppCompatActivity
         if(isPlay) {
             notificationView.setImageViewResource(R.id.closeOnFlash, R.mipmap.ic_stop);
         }else{
-            MainActivity.notification.flags |= Notification.FLAG_AUTO_CANCEL;
+            MainActivity.notification.flags |= Notification.FLAG_NO_CLEAR;
             notificationView.setImageViewResource(R.id.closeOnFlash, R.mipmap.ic_play);
         }
 
@@ -552,7 +545,9 @@ public class MainActivity extends AppCompatActivity
                 cancelBtnIntent, 0);
 
         notificationView.setOnClickPendingIntent(R.id.exitApp,
-                pendingSwitchIntent);
+                pendingcancelBtnIntent);
+
+
 
 
 
@@ -560,6 +555,27 @@ public class MainActivity extends AppCompatActivity
         notificationManager.notify(21061999, notification);
     }
 
+
+    boolean doubleBackToExitPressedOnce = false;
+
+    @Override
+    public void onBackPressed() {
+        if (doubleBackToExitPressedOnce) {
+            super.onBackPressed();
+            return;
+        }
+
+        this.doubleBackToExitPressedOnce = true;
+        Toast.makeText(this, "Please click BACK again to exit", Toast.LENGTH_SHORT).show();
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                doubleBackToExitPressedOnce=false;
+            }
+        }, 2000);
+    }
 
     void cancelPlayerNotification(){
         NotificationManager notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
@@ -621,18 +637,26 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+
     public class exitAppNotification extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             NotificationManager nManager = ((NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
             nManager.cancelAll();
+            nManager.cancelAll();
             finish();
             MainActivity.this.finish();
             //((AppCompatActivity) intent).finish();
+            Intent broadcastIntent = new Intent();
+            broadcastIntent.setAction("com.package.ACTION_CLOSE");
+            sendBroadcast(broadcastIntent);
 
 
-            nManager.cancelAll();
+            System.exit(0);
+            android.os.Process.killProcess(android.os.Process.myPid());
         }
+
+
     }
 
 

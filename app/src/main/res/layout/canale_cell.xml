@@ -34,7 +34,8 @@
                 card_view:layout_constraintBottom_toBottomOf="parent"
                 card_view:layout_constraintLeft_toRightOf="@+id/pictograma"
                 card_view:layout_constraintRight_toRightOf="parent"
-                card_view:layout_constraintTop_toTopOf="parent" />
+                card_view:layout_constraintTop_toTopOf="parent"
+                card_view:layout_constraintHorizontal_bias="1.0" />
 
             <ImageView
                 android:id="@+id/pictograma"
@@ -47,7 +48,7 @@
                 card_view:layout_constraintBottom_toBottomOf="parent"
                 card_view:layout_constraintHorizontal_bias="0.0"
                 card_view:layout_constraintLeft_toLeftOf="parent"
-                card_view:layout_constraintRight_toLeftOf="@+id/playBtn"
+
                 card_view:layout_constraintTop_toTopOf="parent"
                 card_view:layout_constraintVertical_bias="0.461"
                 card_view:srcCompat="@mipmap/ic_launcher" />

@@ -11,7 +11,7 @@
 
     <ImageView
         android:id="@+id/notifiation_image"
-        android:layout_width="0dp"
+        android:layout_width="4dp"
         android:layout_height="64dp"
         android:layout_weight="34.07"
 
@@ -21,7 +21,7 @@
         android:id="@+id/playCurrentRadio"
         android:layout_width="160dp"
         android:layout_height="64dp"
-        android:layout_weight="50"
+        android:layout_weight="46.75"
         android:gravity="center"
         android:text="-------Radio Liberty -------"
         android:textAlignment="viewStart"
@@ -31,15 +31,16 @@
 
     <ImageButton
         android:id="@+id/closeOnFlash"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
         android:background="@color/colorAccent" />
 
     <ImageButton
         android:id="@+id/exitApp"
-        android:layout_width="wrap_content"
+        android:layout_width="17dp"
         android:layout_height="wrap_content"
-        android:background="@drawable/ic_close_black_24dp" />
+        android:background="@drawable/ic_close_black_24dp"
+        android:visibility="gone" />
 
 
 

@@ -178,52 +178,9 @@ public class RadioStationAdapter extends RecyclerView.Adapter<RadioStationAdapte
         });
 
 
-        radioStationViewHolder.vTitle.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                //notice I implemented onClickListener here
-                // so I can associate this click with final Item item
-                MainActivity.isPlay = true;
-                MainActivity.curPlayngURL=url;
-                MainActivity.currentRadioChannelPlaying=titlu;
-                initMediaPlayer(view.getContext(), url);
-                Log.d("Clicked!", titlu);
-                if (MainActivity.exoPlayer != null) {
-                    if (MainActivity.exoPlayer.getPlayWhenReady()) {
-
-                        Log.d("MEDIA PLAYER:", "STOPPED!!");
-                        MainActivity.exoPlayer.stop();
-                        MainActivity.exoPlayer.release();
-                    }
-                }
-                Context context = view.getContext();
-// show The Image in a ImageView
-                // show The Image in a ImageView
-
-                // new RadioStationAdapter.PlayStreamTask(view.getContext()).execute(url);
-                initMediaPlayer(view.getContext(), url);
-                MainActivity.mPlayButton.setBackgroundResource(R.mipmap.ic_stop);
-
-                MainActivity.notificationView.setImageViewResource(R.id.closeOnFlash, R.mipmap.ic_stop);
-                if(Functions.isReachableByTcp(Config.server_domain, 80, 400)==true) {
-                    Functions.getCurrentPlaying(view.getContext());
-                }
-
-                NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                notificationManager.cancel(21061999);
-                MainActivity.notificationManager.notify(21061999, MainActivity.notification);
-
-
-
-            }
-
-        });
 
 
     }
-
-
 
 
 

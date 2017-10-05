@@ -15,6 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar">
         <activity
+            android:launchMode="singleTask"
             android:name=".MainActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
@@ -24,10 +25,12 @@
             </intent-filter>
         </activity>
         <activity
+            android:launchMode="singleTask"
             android:name=".Contact"
             android:label="@string/title_activity_contact"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
+            android:launchMode="singleTask"
             android:name=".Dedicatii"
             android:label="@string/title_activity_dedicatii"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
@@ -35,13 +38,15 @@
         <receiver android:name=".MainActivity$playStopNotification" />
 
         <activity
+            android:launchMode="singleTask"
             android:name=".DespreNoi"
             android:label="@string/title_activity_despre_noi"
             android:theme="@style/Theme.AppCompat.NoActionBar" />
         <activity
+            android:launchMode="singleTask"
             android:name=".DJActivity"
             android:label="@string/title_activity_dj"
-            android:theme="@style/Theme.AppCompat.NoActionBar"></activity>
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"></activity>
     </application>
 
 </manifest>

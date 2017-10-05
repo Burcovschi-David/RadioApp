@@ -11,6 +11,15 @@
             android:id="@+id/dedicatii"
             android:icon="@drawable/ic_menu_dedicatii"
             android:title="Dedicatii" />
+
+        <item
+            android:id="@+id/dj"
+            android:icon="@drawable/dj_icon"
+            android:title="Despre noi - DJ" />
+        <item
+            android:id="@+id/despre_noi"
+            android:icon="@drawable/ic_info"
+            android:title="Despre noi" />
         <item
             android:id="@+id/website"
             android:icon="@drawable/ic_menu_web"

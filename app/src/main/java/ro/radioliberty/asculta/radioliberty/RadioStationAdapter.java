@@ -23,7 +23,10 @@ import android.widget.RemoteViews;
 import android.widget.TextView;
 
 import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.mp3.Mp3Extractor;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
@@ -238,16 +241,39 @@ public class RadioStationAdapter extends RecyclerView.Adapter<RadioStationAdapte
                 DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
                 DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
                 true);
-        MediaSource mediaSource = new ExtractorMediaSource(uri, dataSourceFactory, Mp3Extractor.FACTORY,
+        final MediaSource mediaSource = new ExtractorMediaSource(uri, dataSourceFactory, Mp3Extractor.FACTORY,
                 mHandler, null);
 
         TrackSelector trackSelector = new DefaultTrackSelector(mHandler);
         DefaultLoadControl loadControl = new DefaultLoadControl();
         MainActivity.exoPlayer = ExoPlayerFactory.newSimpleInstance(context, trackSelector, loadControl);
         //exoPlayer.addListener(context);
+        MainActivity.exoPlayer.addListener(new ExoPlayer.EventListener() {
+            @Override
+            public void onLoadingChanged(boolean isLoading) {
+            }
 
+            @Override
+            public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+            }
+
+            @Override
+            public void onTimelineChanged(Timeline timeline, Object manifest) {
+            }
+
+            @Override
+            public void onPlayerError(ExoPlaybackException error) {
+                MainActivity.exoPlayer.prepare(mediaSource);
+                MainActivity.exoPlayer.setPlayWhenReady(true);
+                Log.d("Eroare player",""+error);
+            }
+
+            @Override
+            public void onPositionDiscontinuity() {
+
+            }
+        });
         MainActivity.exoPlayer.prepare(mediaSource);
-
         MainActivity.exoPlayer.setPlayWhenReady(true);
         MainActivity.webview.setVisibility(View.VISIBLE);
 

@@ -489,6 +489,9 @@ public class MainActivity extends AppCompatActivity
         }else if(id==R.id.despre_noi){
             Intent i=new Intent(MainActivity.this,DespreNoi.class);
             startActivity(i);
+        }else if(id==R.id.website){
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://radioliberty.ro"));
+            startActivity(browserIntent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
